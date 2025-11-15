@@ -13,8 +13,10 @@ This is the first checkpoint.
 Implemented:
 - Project structure
 - Architecture documented
-- Basic CLI skeleton with one demo command
+- Basic CLI skeleton with three demo commands
 
 ## How to Run
 ```bash
 cargo run -- add
+cargo run -- report
+cargo run -- budget
