@@ -1,0 +1,9 @@
+# Ignore Cargo build directory
+/target
+
+# Ignore backup files
+*.rs.bk
+
+# Ignore IDE/editor configs 
+.vscode/
+.idea/
