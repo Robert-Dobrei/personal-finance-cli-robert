@@ -23,21 +23,4 @@ It allows importing transactions from CSV/OFX files, manual entry of income/expe
 7. Reports and charts are generated and displayed in terminal/TUI.
 
 ## Repository Structure
-personal-finance-cli-robert/
-├── src/              # source code
-│   ├── cli/          # CLI commands
-│   ├── parser/       # CSV/OFX parsing
-│   ├── db/           # SQLite interactions
-│   ├── categorize/   # categorization engine
-│   ├── budget/       # budget tracking
-│   ├── report/       # reporting & charts
-│   └── search/       # search & filter
-├── tests/            # unit and integration tests
-├── docs/             # documentation
-│   ├── screenshots/
-│   ├── architecture.md
-│   └── decisions.md
-├── data/             # sample CSV/OFX files
-├── Cargo.toml        # Rust dependencies
-├── Cargo.lock        
-└── README.md         # project overview
+<img width="338" height="359" alt="image" src="https://github.com/user-attachments/assets/0af848b8-eefd-41e8-b4c9-9f08b7c2337b" />
