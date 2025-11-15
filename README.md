@@ -12,6 +12,7 @@ Features planned:
 This is the first checkpoint.  
 Implemented:
 - Project structure
+- Architecture documented
 - Basic CLI skeleton with one demo command
 
 ## How to Run
