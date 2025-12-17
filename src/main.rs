@@ -1,22 +1,60 @@
-use clap::{Command};
+mod cli;
+mod db;
+
+use cli::{Cli, Commands};
+use clap::Parser;
 
 fn main() {
-    let matches = Command::new("Finance CLI")
-        .version("0.1")
-        .author("Robert")
-        .about("Track income and expenses")
-        .subcommand(Command::new("add")
-            .about("Add a transaction"))
-        .subcommand(Command::new("report")
-            .about("Generate a report"))
-        .subcommand(Command::new("budget")
-            .about("Manage budgets"))
-        .get_matches();
+    let cli = Cli::parse();
 
-    match matches.subcommand() {
-        Some(("add", _)) => println!("Add transaction (demo)"),
-        Some(("report", _)) => println!("Report (demo)"),
-        Some(("budget", _)) => println!("Budget (demo)"),
-        _ => println!("No valid subcommand was used"),
+    match cli.command {
+        Commands::Add {
+            amount,
+            category,
+            date,
+            desc,
+        } => {
+            let conn = db::open_db().expect("Failed to open DB");
+
+            let tx = db::Transaction {
+                date,
+                amount,
+                category,
+                description: desc,
+            };
+
+            db::insert_transaction(&conn, &tx).expect("Failed to insert transaction");
+
+            println!(
+                "{} recorded: {} {} ({})",
+                if amount < 0.0 { "Expense" } else { "Income" },
+                amount.abs(),
+                tx.category,
+                tx.date
+            );
+        }
+
+        Commands::Report => println!("Report (stub)"),
+        Commands::Budget => println!("Budget (stub)"),
+        Commands::Import { path } => println!("Import (stub) path={path}"),
+        Commands::Search { category, month } => {
+			let conn = db::open_db().expect("Failed to open DB");
+			match db::search_transactions(&conn, category, month) {
+				Ok(results) => {
+					if results.is_empty() {
+						println!("No transactions found.");
+					} else {
+						for tx in results {
+							println!(
+								"{} | {} | {} | {}",
+								tx.date, tx.amount, tx.category, tx.description
+							);
+						}
+					}
+				}
+				Err(e) => eprintln!("Search failed: {e}"),
+			}
+		}
+
     }
 }
