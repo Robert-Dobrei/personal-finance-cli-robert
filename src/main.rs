@@ -1,5 +1,6 @@
 mod cli;
 mod db;
+mod parser;
 
 use cli::{Cli, Commands};
 use clap::Parser;
@@ -36,7 +37,22 @@ fn main() {
 
         Commands::Report => println!("Report (stub)"),
         Commands::Budget => println!("Budget (stub)"),
-        Commands::Import { path } => println!("Import (stub) path={path}"),
+        Commands::Import { path } => {
+			let conn = db::open_db().expect("Failed to open DB");
+
+			match parser::parse_csv(&path) {
+				Ok(transactions) => {
+					let mut count = 0;
+					for tx in transactions {
+						if db::insert_transaction(&conn, &tx).is_ok() {
+							count += 1;
+						}
+					}
+					println!("Imported {} transactions from {}", count, path);
+				}
+				Err(e) => eprintln!("Import failed: {}", e),
+			}
+		}
         Commands::Search { category, month } => {
 			let conn = db::open_db().expect("Failed to open DB");
 			match db::search_transactions(&conn, category, month) {
