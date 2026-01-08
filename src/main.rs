@@ -1,6 +1,7 @@
 mod cli;
 mod db;
 mod parser;
+mod categorize;
 
 use cli::{Cli, Commands};
 use clap::Parser;
@@ -17,12 +18,18 @@ fn main() {
         } => {
             let conn = db::open_db().expect("Failed to open DB");
 
-            let tx = db::Transaction {
-                date,
-                amount,
-                category,
-                description: desc,
-            };
+            let final_category = if category.trim().is_empty() {
+				categorize::auto_categorize(&desc).unwrap_or("Uncategorized".to_string())
+			} else {
+				category
+			};
+
+			let tx = db::Transaction {
+				date,
+				amount,
+				category: final_category,
+				description: desc,
+			};
 
             db::insert_transaction(&conn, &tx).expect("Failed to insert transaction");
 
@@ -43,7 +50,13 @@ fn main() {
 			match parser::parse_csv(&path) {
 				Ok(transactions) => {
 					let mut count = 0;
-					for tx in transactions {
+					for mut tx in transactions {
+						if tx.category.trim().is_empty() || tx.category == "Unknown" {
+							if let Some(cat) = categorize::auto_categorize(&tx.description) {
+								tx.category = cat;
+							}
+						}
+
 						if db::insert_transaction(&conn, &tx).is_ok() {
 							count += 1;
 						}
