@@ -15,17 +15,25 @@ pub fn open_db() -> Result<Connection> {
 }
 
 fn init_schema(conn: &Connection) -> Result<()> {
-    conn.execute_batch(
-        r#"
-        CREATE TABLE IF NOT EXISTS transactions (
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             date TEXT NOT NULL,
             amount REAL NOT NULL,
             category TEXT NOT NULL,
             description TEXT
-        );
-        "#,
+        )",
+        [],
     )?;
+	
+	conn.execute(
+		"CREATE TABLE IF NOT EXISTS budgets (
+			category TEXT PRIMARY KEY,
+			limit_amount REAL NOT NULL
+		)",
+		[],
+	)?;
+
     Ok(())
 }
 

@@ -2,8 +2,9 @@ mod cli;
 mod db;
 mod parser;
 mod categorize;
+mod budget;
 
-use cli::{Cli, Commands};
+use cli::{Cli, Commands, BudgetAction};
 use clap::Parser;
 
 fn main() {
@@ -18,10 +19,9 @@ fn main() {
         } => {
             let conn = db::open_db().expect("Failed to open DB");
 
-            let final_category = if category.trim().is_empty() {
-				categorize::auto_categorize(&desc).unwrap_or("Uncategorized".to_string())
-			} else {
-				category
+            let final_category = match category {
+				Some(cat) if !cat.trim().is_empty() => cat,
+				_ => categorize::auto_categorize(&desc).unwrap_or("Uncategorized".to_string()),
 			};
 
 			let tx = db::Transaction {
@@ -32,7 +32,7 @@ fn main() {
 			};
 
             db::insert_transaction(&conn, &tx).expect("Failed to insert transaction");
-
+			
             println!(
                 "{} recorded: {} {} ({})",
                 if amount < 0.0 { "Expense" } else { "Income" },
@@ -40,10 +40,26 @@ fn main() {
                 tx.category,
                 tx.date
             );
+			
+			budget::check_budget(&conn, &tx).unwrap();
         }
 
-        Commands::Report => println!("Report (stub)"),
-        Commands::Budget => println!("Budget (stub)"),
+        Commands::Budget { action } => {
+			let conn = db::open_db().unwrap();
+
+			match action {
+				BudgetAction::Set { category, limit } => {
+					budget::set_budget(&conn, &category, limit).unwrap();
+					println!("Budget set: {} : {}", category, limit);
+				}
+				BudgetAction::List => {
+					let budgets = budget::list_budgets(&conn).unwrap();
+					for (cat, lim, spent) in budgets {
+						println!("{} : {} (spent {} this month)", cat, lim, spent);
+					}
+				}
+			}
+		}
         Commands::Import { path } => {
 			let conn = db::open_db().expect("Failed to open DB");
 
@@ -60,11 +76,14 @@ fn main() {
 						if db::insert_transaction(&conn, &tx).is_ok() {
 							count += 1;
 						}
+						budget::check_budget(&conn, &tx).unwrap();
 					}
 					println!("Imported {} transactions from {}", count, path);
 				}
 				Err(e) => eprintln!("Import failed: {}", e),
+				
 			}
+			
 		}
         Commands::Search { category, month } => {
 			let conn = db::open_db().expect("Failed to open DB");
