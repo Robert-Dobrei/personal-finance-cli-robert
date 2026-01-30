@@ -63,3 +63,25 @@ pub fn expenses_by_category_for_month(conn: &Connection, year: i32, month: u32) 
     v.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
     v
 }
+
+pub fn run_report(conn: &Connection) {
+    use chrono::{Local, Datelike};
+
+    let now = Local::now();
+    let year = now.year();
+    let month = now.month();
+
+    let summary = crate::reports::generate_monthly_summary(conn, year, month);
+    let cat_data = crate::reports::expenses_by_category_for_month(conn, year, month);
+
+    println!("Report for {}", now.format("%B %Y"));
+    println!("-----------------------------");
+    println!("Total income: {:.2}", summary.total_income);
+    println!("Total expenses: {:.2}", summary.total_expenses);
+    println!("Net: {:.2}", summary.net);
+
+    println!("\nExpenses by Category:");
+    for (cat, val) in cat_data {
+        println!(" - {:<12} {:.2}", cat, val);
+    }
+}

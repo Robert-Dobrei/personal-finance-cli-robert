@@ -8,6 +8,7 @@ mod reports;
 
 use cli::{Cli, Commands, BudgetAction};
 use clap::Parser;
+use crate::reports::run_report;
 
 fn main() {
     let cli = Cli::parse();
@@ -110,5 +111,10 @@ fn main() {
 			let conn = db::open_db().expect("Failed to open DB");
 			tui::run_tui(conn).expect("TUI failed");
 		}
-    }
+		
+		Commands::Report => {
+			let conn = db::open_db().expect("Failed to open DB");
+			run_report(&conn);
+		}	
+	}
 }

@@ -37,6 +37,8 @@ pub enum Commands {
     },
 	
 	Tui,
+	
+	Report,
 }
 
 #[derive(Subcommand)]
