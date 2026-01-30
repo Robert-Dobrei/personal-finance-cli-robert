@@ -70,7 +70,8 @@ cargo build --release
 cargo run -- tui
 cargo run -- import --path <FILE-PATH>
 cargo run -- add --amount=<AMOUNT> --date <DATE> --category <CATEGORY> --desc <DESC>
-cargo run -- search  --category <CATEGORY> --month <MONTH>
+cargo run -- search
+cargo run -- search --category <CATEGORY> --month <MONTH>
 cargo run -- budget set --category <CATEGORY> --limit <LIMIT>
 cargo run -- budget list
 cargo run -- report
