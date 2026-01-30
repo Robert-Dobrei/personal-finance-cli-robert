@@ -3,6 +3,8 @@ mod db;
 mod parser;
 mod categorize;
 mod budget;
+mod tui;
+mod reports;
 
 use cli::{Cli, Commands, BudgetAction};
 use clap::Parser;
@@ -103,6 +105,10 @@ fn main() {
 				Err(e) => eprintln!("Search failed: {e}"),
 			}
 		}
-
+		
+		Commands::Tui => {
+			let conn = db::open_db().expect("Failed to open DB");
+			tui::run_tui(conn).expect("TUI failed");
+		}
     }
 }

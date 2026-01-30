@@ -35,6 +35,8 @@ pub enum Commands {
         #[command(subcommand)]
         action: BudgetAction,
     },
+	
+	Tui,
 }
 
 #[derive(Subcommand)]

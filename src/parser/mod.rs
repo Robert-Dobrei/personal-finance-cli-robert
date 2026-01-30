@@ -1,6 +1,7 @@
 use crate::db::Transaction;
 use csv::ReaderBuilder;
 use std::error::Error;
+use chrono::NaiveDate;
 
 pub fn parse_csv(path: &str) -> Result<Vec<Transaction>, Box<dyn Error>> {
     let mut reader = ReaderBuilder::new()
@@ -17,6 +18,18 @@ pub fn parse_csv(path: &str) -> Result<Vec<Transaction>, Box<dyn Error>> {
             continue;
         }
 
+        let raw_date = record.get(0).unwrap().trim();
+
+        let parsed_date = match NaiveDate::parse_from_str(raw_date, "%m/%d/%Y") {
+            Ok(d) => d,
+            Err(_) => {
+                eprintln!("Skipping row with invalid date: {:?}", record);
+                continue;
+            }
+        };
+
+        let normalized_date = parsed_date.format("%m/%d/%Y").to_string();
+
         let amount_str = record.get(1).unwrap().trim();
         if amount_str.is_empty() {
             eprintln!("Skipping row with empty amount: {:?}", record);
@@ -32,7 +45,7 @@ pub fn parse_csv(path: &str) -> Result<Vec<Transaction>, Box<dyn Error>> {
         };
 
         transactions.push(Transaction {
-            date: record.get(0).unwrap().to_string(),
+            date: normalized_date,
             amount,
             category: record.get(2).unwrap().to_string(),
             description: record.get(3).unwrap().to_string(),
